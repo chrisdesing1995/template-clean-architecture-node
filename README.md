@@ -6,7 +6,16 @@ Base template enterprise reusable para proyectos Node.js modernos con NestJS + T
 
 Esta template establece una base limpia para construir servicios backend siguiendo principios de Clean Architecture + DDD Lite.
 
-Está pensada para crecer posteriormente con capacidades como Prisma, PostgreSQL, logging estructurado, Swagger, filtros globales, interceptores, CQRS, observabilidad y testing más avanzado.
+Actualmente incluye:
+
+- Swagger enterprise centralizado.
+- Response estándar global.
+- Validation global.
+- Exception filter global.
+- TraceId por request.
+- CRUD básico `Person` en memoria.
+
+Está pensada para crecer posteriormente con capacidades como Prisma, PostgreSQL, logging estructurado, CQRS, observabilidad y testing más avanzado.
 
 ## Arquitectura
 
@@ -18,16 +27,78 @@ La estructura separa responsabilidades por capas:
 - `infrastructure`: adaptadores externos e implementaciones técnicas.
 - `shared`: utilidades transversales y componentes compartidos.
 
+## Capacidades transversales
+
+### Swagger
+
+Swagger se configura de forma centralizada y queda disponible en:
+
+```text
+/swagger
+```
+
+Incluye documentación de:
+
+- DTOs de request.
+- DTOs de response.
+- Respuestas 200, 400 y 500.
+- Validaciones visibles en la documentación.
+
+### Response estándar
+
+Todas las respuestas exitosas y de error siguen esta estructura:
+
+```json
+{
+  "traceId": "xxx",
+  "success": true,
+  "code": 200,
+  "message": "Operation successful.",
+  "data": {},
+  "errors": null
+}
+```
+
+### Validation
+
+La aplicación usa `ValidationPipe` global con:
+
+- `whitelist`
+- `forbidNonWhitelisted`
+- `transform`
+
+### Exception Filter
+
+Las excepciones HTTP y técnicas son transformadas a una respuesta estándar global con `traceId`, `code`, `message` y `errors`.
+
+## Modulo Person
+
+La template incluye un ejemplo CRUD básico `Person` para mostrar cómo escalar la arquitectura sin romper las capas:
+
+- `api/persons`: controller y módulo HTTP.
+- `application/persons`: DTOs, casos de uso y mapeo.
+- `domain/persons`: entidad y contrato de repositorio.
+- `infrastructure/persons`: repositorio en memoria.
+
 ## Estructura de carpetas
 
 ```text
 template-clean-architecture-node
 ├── src
 │   ├── api
+│   │   └── persons
 │   ├── application
+│   │   └── persons
 │   ├── domain
+│   │   └── persons
 │   ├── infrastructure
+│   │   └── persons
 │   ├── shared
+│   │   ├── exceptions
+│   │   ├── interceptors
+│   │   ├── middleware
+│   │   ├── responses
+│   │   └── swagger
 │   └── main.ts
 ├── prisma
 ├── test
@@ -67,6 +138,20 @@ npm run start:dev
 
 ```bash
 npm run build
+```
+
+## Como abrir Swagger
+
+1. Levanta la aplicación:
+
+```bash
+npm run start:dev
+```
+
+2. Abre:
+
+```text
+http://localhost:3000/swagger
 ```
 
 ## Scripts disponibles
