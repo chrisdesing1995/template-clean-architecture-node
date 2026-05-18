@@ -14,6 +14,10 @@ Actualmente incluye:
 - Exception filter global.
 - TraceId por request.
 - CRUD básico `Person` en memoria.
+- Pino logging reusable.
+- Logs diarios en archivo.
+- Logging interceptor global.
+- ExecutionService reusable.
 
 Está pensada para crecer posteriormente con capacidades como Prisma, PostgreSQL, logging estructurado, CQRS, observabilidad y testing más avanzado.
 
@@ -28,6 +32,25 @@ La estructura separa responsabilidades por capas:
 - `shared`: utilidades transversales y componentes compartidos.
 
 ## Capacidades transversales
+
+### Pino logging
+
+La template usa `nestjs-pino` sobre `pino` con configuración reusable para:
+
+- logs estructurados
+- logs en consola
+- pretty logs en desarrollo
+- logs diarios en archivos dentro de `logs/`
+- `traceId` y `requestId` en todo el ciclo del request
+
+Los archivos diarios siguen este formato:
+
+```text
+logs/
+├── log-20260517.txt
+├── log-20260518.txt
+└── log-20260519.txt
+```
 
 ### Swagger
 
@@ -71,6 +94,39 @@ La aplicación usa `ValidationPipe` global con:
 
 Las excepciones HTTP y técnicas son transformadas a una respuesta estándar global con `traceId`, `code`, `message` y `errors`.
 
+Además, el filtro global registra:
+
+- error
+- stack trace
+- método HTTP
+- path
+- traceId
+
+### Logging interceptor
+
+Existe un interceptor global reusable para registrar:
+
+- request start
+- response end
+- status code
+- elapsed time
+- traceId
+
+### ExecutionService
+
+La capa `shared/logging` incluye `ExecutionService`, un componente reusable para centralizar:
+
+- logs de inicio
+- logs de fin
+- logs de error
+- serialización segura de request/response
+- elapsed time
+- relanzamiento de errores
+
+Esto evita repetir `try/catch`, `logger.info`, `logger.error` y serialización en servicios de aplicación.
+
+El ejemplo `PersonsService` ya usa este patrón.
+
 ## Modulo Person
 
 La template incluye un ejemplo CRUD básico `Person` para mostrar cómo escalar la arquitectura sin romper las capas:
@@ -95,6 +151,7 @@ template-clean-architecture-node
 │   │   └── persons
 │   ├── shared
 │   │   ├── exceptions
+│   │   ├── logging
 │   │   ├── interceptors
 │   │   ├── middleware
 │   │   ├── responses
@@ -127,6 +184,8 @@ npm install
 ```bash
 npm run start
 ```
+
+Al iniciar, la aplicación imprime por consola la ruta del proyecto y las URLs principales.
 
 ## Como ejecutar en desarrollo
 

@@ -6,20 +6,46 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import type { Response } from 'express';
 import type { RequestWithTraceId } from '@shared/http/request-with-trace-id.interface';
+import { RequestContextService } from '@shared/logging/request-context.service';
+import { safeSerialize } from '@shared/logging/safe-serializer.util';
 import type { ApiError } from '@shared/responses/api-error.interface';
 import type { ApiResponse } from '@shared/responses/api-response.interface';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  constructor(
+    private readonly logger: PinoLogger,
+    private readonly requestContextService: RequestContextService,
+  ) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
     const request = context.getRequest<RequestWithTraceId>();
+    const traceId = request.traceId ?? this.requestContextService.getTraceId() ?? 'unknown';
 
     const status = this.getStatus(exception);
-    const body = this.buildErrorResponse(status, exception, request.traceId ?? 'unknown');
+    const body = this.buildErrorResponse(status, exception, traceId);
+
+    this.logger.error(
+      {
+        context: GlobalExceptionFilter.name,
+        method: request.method,
+        path: request.originalUrl ?? request.url,
+        statusCode: status,
+        exception: safeSerialize(exception),
+        stack: exception instanceof Error ? exception.stack : undefined,
+      },
+      [
+        '[EXCEPTION]',
+        `Method: ${request.method}`,
+        `Path: ${request.originalUrl ?? request.url}`,
+        `TraceId: ${traceId}`,
+      ].join('\n'),
+    );
 
     response.status(status).json(body);
   }
