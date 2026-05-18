@@ -221,3 +221,12 @@ http://localhost:3000/swagger
 - `npm run lint`
 - `npm run format`
 - `npm run test`
+
+## GitFlow para GitHub
+
+La template incluye una base de gobernanza GitFlow adaptada a GitHub:
+
+- [GitFlow Enterprise para GitHub](/Users/macuser/Repos/template-clean-architecture-node/docs/github-gitflow-standard.md)
+- [PR Template](/Users/macuser/Repos/template-clean-architecture-node/.github/PULL_REQUEST_TEMPLATE.md)
+- [CODEOWNERS](/Users/macuser/Repos/template-clean-architecture-node/.github/CODEOWNERS)
+- workflows de validación y tagging en `.github/workflows/`

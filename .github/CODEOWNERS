@@ -1,0 +1,10 @@
+# Ajustar los owners reales del equipo antes de usar en produccion.
+* @your-github-org/backend-team
+
+/src/api/ @your-github-org/backend-team
+/src/application/ @your-github-org/backend-team
+/src/domain/ @your-github-org/backend-team
+/src/infrastructure/ @your-github-org/backend-team
+/src/shared/ @your-github-org/platform-team
+/.github/ @your-github-org/platform-team
+/*.md @your-github-org/platform-team
