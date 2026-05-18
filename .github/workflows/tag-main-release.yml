@@ -24,7 +24,9 @@ jobs:
 
       - name: Resolve version from package.json
         id: version
-        run: echo "value=v$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "value=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag already exists
         id: tag-check
